@@ -1,13 +1,98 @@
-# ReasonReact Template & Examples
+# ReasonReact / BuckleScript 7.1.0+ Build Error
 
-This is:
-- A template for your new ReasonReact project.
-- A collection of thin examples illustrating ReasonReact usage.
-- Extra helper documentation for ReasonReact (full ReasonReact docs [here](https://reasonml.github.io/reason-react/)).
+This project is little more than the generated files from the `react-hooks` along with the `reason-apollo` dependency.
+I created this project to help illustrate a compilation issue introduce with the new ReasonReact PPX shipping with BuckleScript 7.1.0.
+This project is illustrative of what new users to the ReasonML ecosystem, hoping to get started with ReasonReact and GraphQL, are likely to run into.
 
-`src` contains 4 sub-folders, each an independent, self-contained ReasonReact example. Feel free to delete any of them and shape this into your project! This template's more malleable than you might be used to =).
+With BuckleScript 7.1.1, `yarn build` will fail with:
 
-The point of this template and examples is to let you understand and personally tweak the entirely of it. We **don't** give you an opaque, elaborate mega build setup just to put some boxes on the screen. It strikes to stay transparent, learnable, and simple. You're encouraged to read every file; it's a great feeling, having the full picture of what you're using and being able to touch any part.
+```
+➜ yarn build
+yarn run v1.21.1
+$ bsb -make-world
+Different compiler version: clean current repo
+Cleaning... 46 files.
+[37/37] Building src/ReactDOMRe.cmj
+Different compiler version: clean current repo
+Cleaning... 48 files.
+[29/36] Building src/graphql-types/ReasonApolloQuery.cmj
+FAILED: src/graphql-types/ReasonApolloQuery.cmj src/graphql-types/ReasonApolloQuery.cmi /home/nirvdrum/dev/workspaces/my-react-app/node_modules/reason-apollo/src/graphql-types/ReasonApolloQuery.bs.js
+/home/nirvdrum/dev/workspaces/my-react-app/node_modules/bs-platform/lib/bsc.exe -nostdlib -bs-package-name reason-apollo  -bs-package-output commonjs:src/graphql-types -color always -bs-suffix -I src/graphql-types -I src -I /home/nirvdrum/dev/workspaces/my-react-app/node_modules/reason-react/lib/ocaml -I /home/nirvdrum/dev/workspaces/my-react-app/node_modules/bs-platform/lib/ocaml -w a -bs-super-errors -o src/graphql-types/ReasonApolloQuery.cmj src/graphql-types/ReasonApolloQuery.reast
+
+  We've found a bug for you!
+  /home/nirvdrum/dev/workspaces/my-react-app/node_modules/reason-apollo/src/graphql-types/ReasonApolloQuery.re 168:10-29
+
+  166 ┆ let make =
+  167 ┆     (
+  168 ┆       ~variables: Js.Json.t=?,
+  169 ┆       ~pollInterval: int=?,
+  170 ┆       ~notifyOnNetworkStatusChange: bool=?,
+
+  This pattern matches values of type
+    Js.Json.t (defined as Js.Json.t)
+  but a pattern was expected which matches values of type
+    option('a)
+
+[30/36] Building src/graphql-types/ReasonApolloMutation.cmj
+FAILED: src/graphql-types/ReasonApolloMutation.cmj src/graphql-types/ReasonApolloMutation.cmi /home/nirvdrum/dev/workspaces/my-react-app/node_modules/reason-apollo/src/graphql-types/ReasonApolloMutation.bs.js
+/home/nirvdrum/dev/workspaces/my-react-app/node_modules/bs-platform/lib/bsc.exe -nostdlib -bs-package-name reason-apollo  -bs-package-output commonjs:src/graphql-types -color always -bs-suffix -I src/graphql-types -I src -I /home/nirvdrum/dev/workspaces/my-react-app/node_modules/reason-react/lib/ocaml -I /home/nirvdrum/dev/workspaces/my-react-app/node_modules/bs-platform/lib/ocaml -w a -bs-super-errors -o src/graphql-types/ReasonApolloMutation.cmj src/graphql-types/ReasonApolloMutation.reast
+
+  We've found a bug for you!
+  /home/nirvdrum/dev/workspaces/my-react-app/node_modules/reason-apollo/src/graphql-types/ReasonApolloMutation.re 133:10-29
+
+  131 ┆ let make =
+  132 ┆     (
+  133 ┆       ~variables: Js.Json.t=?,
+  134 ┆       ~onError: apolloError => unit=?,
+  135 ┆       ~onCompleted: unit => unit=?,
+
+  This pattern matches values of type
+    Js.Json.t (defined as Js.Json.t)
+  but a pattern was expected which matches values of type
+    option('a)
+
+[31/36] Building src/graphql-types/ReasonApolloSubscription.cmj
+FAILED: subcommand failed.
+Failure: /home/nirvdrum/dev/workspaces/my-react-app/node_modules/bs-platform/lib/ninja.exe     Location: /home/nirvdrum/dev/workspaces/my-react-app/node_modules/reason-apollo/lib/bs       error Command failed with exit code 2.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+```
+
+With BuckleScript 7.0.1, the build succeeds:
+
+```
+➜ yarn add bs-platform@7.0.1
+yarn add v1.21.1
+[1/4] Resolving packages...
+[2/4] Fetching packages...
+[3/4] Linking dependencies...
+[4/4] Building fresh packages...
+success Saved lockfile.
+warning "bs-platform" is already in "devDependencies". Please remove existing entry first before adding it to "dependencies".
+success Saved 1 new dependency.
+info Direct dependencies
+└─ bs-platform@7.0.1
+info All dependencies
+└─ bs-platform@7.0.1
+Done in 8.97s.
+
+➜ yarn clean; yarn build
+yarn run v1.21.1
+$ bsb -clean-world
+Cleaning... 46 files.
+Cleaning... 48 files.
+Cleaning... 7 files.
+Done in 0.54s.
+yarn run v1.21.1
+$ bsb -make-world
+[37/37] Building src/ReactDOMRe.cmj
+[36/36] Building src/ReasonApollo.cmj
+[22/22] Building src/Index-ReasonReactExamples.cmj
+Done in 1.43s.
+```
+
+Note that the error originates in the [reason-apollo](https://github.com/apollographql/reason-apollo) dependency.
+reason-apollo uses an optional argument with a supplied type and this construct has been buggy with ReasonReact, so ReasonReact made a change to raise an error if such signatures exist in any ReasonReact component definitions.
+Note also that the project's `reason-react` dependency doesn't change, only the `bs-platform` dependency does, which can be confusing as the error emanates from ReasonReact.
 
 ## Run
 
