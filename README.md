@@ -4,6 +4,11 @@ This project is little more than the generated files from the `react-hooks` alon
 I created this project to help illustrate a compilation issue introduce with the new ReasonReact PPX shipping with BuckleScript 7.1.0.
 This project is illustrative of what new users to the ReasonML ecosystem, hoping to get started with ReasonReact and GraphQL, are likely to run into.
 
+BuckleScript 7.1.1 is the latest release as of March 3, 2020.
+In this release, Hongbo attempt to convert the ReasonReact error message to a warning, by removing some code in BS that explicitly raised an error using the "ReasonReact" prefix.
+Unfortunately, the underlying ReasonReact PPX still raises the error, but it's no longer caught in BuckleScript and re-written with a more friendly error message.
+I'm not entirely clear on why the error message code was split over two projects, but as best I can tell, that's how it was structured.
+
 With BuckleScript 7.1.1, `yarn build` will fail with:
 
 ```
@@ -54,6 +59,70 @@ FAILED: src/graphql-types/ReasonApolloMutation.cmj src/graphql-types/ReasonApoll
 [31/36] Building src/graphql-types/ReasonApolloSubscription.cmj
 FAILED: subcommand failed.
 Failure: /home/nirvdrum/dev/workspaces/my-react-app/node_modules/bs-platform/lib/ninja.exe     Location: /home/nirvdrum/dev/workspaces/my-react-app/node_modules/reason-apollo/lib/bs       error Command failed with exit code 2.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+```
+
+With BuckleScript 7.1.0, the build will fail with a more informative error message:
+
+```
+➜ yarn add bs-platform@7.1.0
+yarn add v1.21.1
+[1/4] Resolving packages...
+warning bs-platform@7.1.0: minor fix in 7.1.1
+[2/4] Fetching packages...
+[3/4] Linking dependencies...
+[4/4] Building fresh packages...
+success Saved lockfile.
+warning "bs-platform" is already in "devDependencies". Please remove existing entry first before adding it to "dependencies". success Saved 1 new dependency.
+info Direct dependencies
+└─ bs-platform@7.1.0
+info All dependencies
+└─ bs-platform@7.1.0
+Done in 7.96s.
+
+➜ yarn clean; yarn build
+yarn run v1.21.1
+$ bsb -clean-world
+Cleaning... 46 files.
+Cleaning... 48 files.
+Cleaning... 36 files.
+Done in 0.38s.
+yarn run v1.21.1
+$ bsb -make-world
+[37/37] Building src/ReactDOMRe.cmj
+[12/36] Building src/graphql-types/ReasonApolloMutation.reast
+FAILED: src/graphql-types/ReasonApolloMutation.reast
+/home/nirvdrum/dev/workspaces/my-react-app/node_modules/bs-platform/lib/bsc.exe  -w a -color always -bs-jsx 3 -bs-super-errors -o src/graphql-types/ReasonApolloMutation.reast -bs-syntax-only -bs-binary-ast /home/nirvdrum/dev/workspaces/my-react-app/node_modules/reason-apollo/src/graphql-types/ReasonApolloMutation.re
+
+  We've found a bug for you!
+  /home/nirvdrum/dev/workspaces/my-react-app/node_modules/reason-apollo/src/graphql-types/ReasonApolloMutation.re 133:10-29   
+  131 ┆ let make =
+  132 ┆     (
+  133 ┆       ~variables: Js.Json.t=?,
+  134 ┆       ~onError: apolloError => unit=?,
+  135 ┆       ~onCompleted: unit => unit=?,
+
+  ReasonReact: optional argument annotations must have explicit `option`. Did you mean `option(Js.Json.t)=?`?
+
+[17/36] Building src/graphql-types/ReasonApolloQuery.reast
+FAILED: src/graphql-types/ReasonApolloQuery.reast
+/home/nirvdrum/dev/workspaces/my-react-app/node_modules/bs-platform/lib/bsc.exe  -w a -color always -bs-jsx 3 -bs-super-errors -o src/graphql-types/ReasonApolloQuery.reast -bs-syntax-only -bs-binary-ast /home/nirvdrum/dev/workspaces/my-react-app/node_modules/reason-apollo/src/graphql-types/ReasonApolloQuery.re
+
+  We've found a bug for you!
+  /home/nirvdrum/dev/workspaces/my-react-app/node_modules/reason-apollo/src/graphql-types/ReasonApolloQuery.re 168:10-29      
+  166 ┆ let make =
+  167 ┆     (
+  168 ┆       ~variables: Js.Json.t=?,
+  169 ┆       ~pollInterval: int=?,
+  170 ┆       ~notifyOnNetworkStatusChange: bool=?,
+
+  ReasonReact: optional argument annotations must have explicit `option`. Did you mean `option(Js.Json.t)=?`?
+
+[22/36] Building src/ApolloUtilities.d
+FAILED: subcommand failed.
+Failure: /home/nirvdrum/dev/workspaces/my-react-app/node_modules/bs-platform/lib/ninja.exe
+ Location: /home/nirvdrum/dev/workspaces/my-react-app/node_modules/reason-apollo/lib/bs
+error Command failed with exit code 2.
 info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
 ```
 
