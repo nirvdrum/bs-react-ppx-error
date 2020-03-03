@@ -5,7 +5,7 @@ I created this project to help illustrate a compilation issue introduce with the
 This project is illustrative of what new users to the ReasonML ecosystem, hoping to get started with ReasonReact and GraphQL, are likely to run into.
 
 BuckleScript 7.1.1 is the latest release as of March 3, 2020.
-In this release, Hongbo attempt to convert the ReasonReact error message to a warning, by removing some code in BS that explicitly raised an error using the "ReasonReact" prefix.
+In this release, Hongbo [attempt to convert the ReasonReact error message to a warning](https://github.com/BuckleScript/bucklescript/commit/c9a41526d6fc3cc2ff60dd067234fd751c6c1569), by removing some code in BS that explicitly raised an error using the "ReasonReact" prefix.
 Unfortunately, the underlying ReasonReact PPX still raises the error, but it's no longer caught in BuckleScript and re-written with a more friendly error message.
 I'm not entirely clear on why the error message code was split over two projects, but as best I can tell, that's how it was structured.
 
